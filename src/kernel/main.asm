@@ -1,6 +1,8 @@
+mov byte [disk_num], dl
+
 call cls
-mov ax, 0
-mov cx, 0
+xor ax, ax
+xor cx, cx
 
 mov bx, welcome_msg
 call write_buffer
@@ -18,6 +20,8 @@ main:
     call choose_command
 
     jmp main
+
+call fatal_error
 
 choose_command:
     mov bx, command
@@ -73,6 +77,14 @@ choose_command:
     call cmp_str
     je .love_command
 
+    mov dx, fatal_error_command
+    call cmp_str
+    je .fatal_error_command
+
+    mov dx, restore_cmd_command
+    call cmp_str
+    je .restore_cmd_command
+
 
     cmp byte [bx], 0
     je .nothing
@@ -119,13 +131,13 @@ choose_command:
     .ver2_cmd:
     push ax
 
-    mov al, '2'
+    mov al, ' '
     call write_char
-    mov al, '3'
+    mov al, ' '
     call write_char
-    mov al, '5'
+    mov al, ' '
     call write_char
-    mov al, '0'
+    mov al, ' '
     call write_char
 
     pop ax
@@ -155,13 +167,25 @@ choose_command:
     call new_line
     ret
 
+    .fatal_error_command:
+    call fatal_error
+    ret
+
+    .restore_cmd_command
+    mov bx, command
+    call write_buffer
+    call new_line
+    ret
+
     .nothing:
     ret
+
+call fatal_error
 
 %define HEART 2563
 %define NEW_LINE 10,13
 %define DATE "2020-2024r."
-%define VER "System HTC build-14022024 16-bits",NEW_LINE
+%define VER "System HTC build-16022024 16-bits",NEW_LINE
 
 welcome_msg: db "Made by: F1L1P and Rilax",NEW_LINE,NEW_LINE,VER,"Copyright (C) ",DATE,NEW_LINE,NEW_LINE,"Type help a for a list of commands.",NEW_LINE,NEW_LINE, 0
 
@@ -175,6 +199,8 @@ ping_command_msg: db "pong!", NEW_LINE, 0
 null_msg: db 0
 
 command_tag: db "> ", 0
+; command_tag: db "#> ", 0
+; command_tag: db "#/gowno/jakisfolder> ", 0
 
 cls_command: db "cls", 0
 help_command: db "help", 0
@@ -196,10 +222,19 @@ cal_command: db "cal", 0
 ver2_command: db "ver2", 0
 test_command: db "test", 0
 bindec_command: db "bindec", 0
+fatal_error_command: db "death", 0 ; fatal error test
+restore_cmd_command: db "rescmd", 0 ; fatal error test
 mov_ax_cx_command: db "ax=cx", 0 ; nie dziala (narazie)
 
-love1_command: db "love", 0 ; 14 ; Istereg
-love2_command: db "LOVE", 0 ; 14 ; Istereg
+; Isteregi
+love1_command: db "love", 0 ; z
+love2_command: db "LOVE", 0 ; z
+
+; disk byte table!
+disk_num: db 0
+cylinder_num: db 0 
+sector_num:   db 0
+head_num:     db 0
 
 command: times 512*2 db 0
 command_len: equ $ - command - 1
